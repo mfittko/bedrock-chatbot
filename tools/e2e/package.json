@@ -1,0 +1,13 @@
+{
+  "name": "bedrock-chatbot-e2e-tools",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Non-interactive E2E test tools for Bedrock Chatbot APIs",
+  "scripts": {
+    "test:ws-rest": "node test_ws_rest.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

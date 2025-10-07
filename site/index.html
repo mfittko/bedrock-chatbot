@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bedrock Chatbot Demo (React + WS Streaming)</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        margin: 0;
+        background: #0b1220;
+        color: #e5e7eb;
+      }
+      header {
+        padding: 12px 16px;
+        border-bottom: 1px solid #1f2937;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+      input,
+      textarea,
+      button {
+        font-size: 16px;
+      }
+      input,
+      textarea {
+        background: #111827;
+        color: #e5e7eb;
+        border: 1px solid #374151;
+        border-radius: 8px;
+        padding: 10px;
+        width: 100%;
+      }
+      textarea {
+        min-height: 100px;
+      }
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .bubble {
+        background: #111827;
+        padding: 12px;
+        border-radius: 10px;
+        margin: 8px 0;
+      }
+      .you {
+        background: #0f172a;
+      }
+      .meta {
+        color: #9ca3af;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>Bedrock Chatbot Demo</strong>
+      <span class="meta">React + WebSocket streaming over API Gateway</span>
+    </header>
+    <div id="root" class="container"></div>
+
+    <script type="text/babel">
+      const { useEffect, useRef, useState } = React
+
+      function App() {
+        const [cfg, setCfg] = useState({ rest: '', ws: '' })
+        const [status, setStatus] = useState('disconnected')
+        const [connectionId, setConnectionId] = useState('—')
+        const [sessionId] = useState(() => Math.random().toString(36).slice(2))
+        const [prompt, setPrompt] = useState('Hello there!')
+        const [messages, setMessages] = useState([])
+        const wsRef = useRef(null)
+        const currentRef = useRef(null)
+
+        useEffect(() => {
+          const params = new URLSearchParams(window.location.search)
+          const rest = params.get('rest') || ''
+          const ws = params.get('ws') || ''
+          if (rest || ws) setCfg({ rest, ws })
+        }, [])
+
+        function connect() {
+          if (!cfg.ws) return alert('Missing ws in config.json')
+          if (wsRef.current)
+            try {
+              wsRef.current.close()
+            } catch (e) {}
+          const w = new WebSocket(cfg.ws)
+          wsRef.current = w
+          setStatus('connecting')
+          w.onopen = () => {
+            setStatus('connected')
+            // trigger $default route to emit connection-ack reliably
+            try {
+              w.send(JSON.stringify({ action: 'hello' }))
+            } catch (e) {}
+          }
+          w.onclose = () => {
+            setStatus('disconnected')
+            setConnectionId('—')
+          }
+          w.onmessage = (evt) => {
+            try {
+              const data = JSON.parse(evt.data)
+              if (data.event === 'connection-ack' && data.connectionId) {
+                setConnectionId(data.connectionId)
+              } else if (data.event === 'delta') {
+                if (!currentRef.current) {
+                  currentRef.current = { who: 'assistant', text: '' }
+                  setMessages((m) => [...m, currentRef.current])
+                }
+                currentRef.current.text += data.content
+                // trigger re-render
+                setMessages((m) => [...m])
+              } else if (data.event === 'complete') {
+                currentRef.current = null
+              }
+            } catch (_) {}
+          }
+        }
+
+        async function send() {
+          if (!prompt.trim()) return
+          setMessages((m) => [...m, { who: 'you', text: prompt }])
+          setPrompt('')
+          if (!cfg.rest) return alert('Missing rest in config.json')
+          if (!connectionId || connectionId === '—' || !String(connectionId).trim()) {
+            alert(
+              'Waiting for connection id from WebSocket. Try Connect again and wait for the connection-ack.',
+            )
+            return
+          }
+          const payload = { prompt, sessionId, connectionId }
+          const res = await fetch(cfg.rest, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+          if (!res.ok) alert('Enqueue failed: ' + res.status)
+        }
+
+        return (
+          <div>
+            <div className="row">
+              <input
+                placeholder="REST endpoint"
+                value={cfg.rest}
+                onChange={(e) => setCfg((v) => ({ ...v, rest: e.target.value }))}
+              />
+              <input
+                placeholder="WS endpoint"
+                value={cfg.ws}
+                onChange={(e) => setCfg((v) => ({ ...v, ws: e.target.value }))}
+              />
+              <button onClick={connect}>Connect</button>
+            </div>
+            <p className="meta">
+              Session: {sessionId} • Connection: {connectionId} • Status: {status}
+            </p>
+            <div>
+              {messages.map((m, i) => (
+                <div key={i} className={'bubble ' + (m.who === 'you' ? 'you' : '')}>
+                  {m.text}
+                </div>
+              ))}
+            </div>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Ask something..."
+            />
+            <div className="row" style={{ marginTop: 8 }}>
+              <button
+                onClick={send}
+                disabled={status !== 'connected' || !connectionId || connectionId === '—'}
+              >
+                Send
+              </button>
+              <button onClick={() => setMessages([])}>Clear</button>
+            </div>
+          </div>
+        )
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+    </script>
+  </body>
+</html>

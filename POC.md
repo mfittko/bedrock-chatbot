@@ -1,18 +1,22 @@
-
 # POC Guide
 
 ## Deploy
+
 ```
 cd cdk
 npm install
 npm run deploy
 ```
+
 Take note of the outputs:
+
 - `RestApiUrl` (append `/chat`)
 - `WsEndpoint`
 
 ## Configure the frontend
+
 Upload the `frontend/` folder to an S3 static site or serve locally. Create `frontend/config.json` with your endpoints:
+
 ```json
 {
   "rest": "https://<rest-id>.execute-api.<region>.amazonaws.com/chat",

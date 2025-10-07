@@ -1,29 +1,29 @@
 <script type="module">
-  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'
   // Initialize without auto-run; we'll transform code blocks first
-  mermaid.initialize({ startOnLoad: false, theme: "neutral" });
+  mermaid.initialize({ startOnLoad: false, theme: 'neutral' })
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     // Convert fenced code blocks like ```mermaid to <div class="mermaid">…</div>
-    const codeBlocks = document.querySelectorAll("code.language-mermaid");
+    const codeBlocks = document.querySelectorAll('code.language-mermaid')
     codeBlocks.forEach((codeEl) => {
-      const graph = codeEl.textContent;
+      const graph = codeEl.textContent
       // Prefer replacing the outer <pre>...</pre> if present
-      const pre = codeEl.closest("pre");
-      const container = document.createElement("div");
-      container.className = "mermaid";
-      container.textContent = graph;
+      const pre = codeEl.closest('pre')
+      const container = document.createElement('div')
+      container.className = 'mermaid'
+      container.textContent = graph
 
       if (pre && pre.parentElement) {
         // Some themes wrap <pre> in an extra <div class="highlight">; replace that wrapper
-        const wrapper = pre.parentElement.classList.contains("highlight") ? pre.parentElement : pre;
-        wrapper.replaceWith(container);
+        const wrapper = pre.parentElement.classList.contains('highlight') ? pre.parentElement : pre
+        wrapper.replaceWith(container)
       } else {
-        codeEl.replaceWith(container);
+        codeEl.replaceWith(container)
       }
-    });
+    })
 
     // Render any .mermaid blocks now present in the DOM
-    mermaid.run({ querySelector: ".mermaid" });
-  });
+    mermaid.run({ querySelector: '.mermaid' })
+  })
 </script>

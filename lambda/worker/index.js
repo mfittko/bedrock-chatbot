@@ -1,69 +1,185 @@
+const {
+  ApiGatewayManagementApiClient,
+  PostToConnectionCommand,
+} = require('@aws-sdk/client-apigatewaymanagementapi')
+const {
+  BedrockRuntimeClient,
+  InvokeModelWithResponseStreamCommand,
+} = require('@aws-sdk/client-bedrock-runtime')
+const { SignatureV4 } = require('@aws-sdk/signature-v4')
+const { Sha256 } = require('@aws-crypto/sha256-js')
+const { HttpRequest } = require('@aws-sdk/protocol-http')
+const { defaultProvider } = require('@aws-sdk/credential-provider-node')
+const {
+  BedrockAgentRuntimeClient,
+  RetrieveCommand,
+} = require('@aws-sdk/client-bedrock-agent-runtime')
 
-const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require('@aws-sdk/client-apigatewaymanagementapi');
-const { BedrockRuntimeClient, InvokeModelWithResponseStreamCommand } = require('@aws-sdk/client-bedrock-runtime');
-const { BedrockAgentRuntimeClient, RetrieveCommand } = require('@aws-sdk/client-bedrock-agent-runtime');
+const ws = new ApiGatewayManagementApiClient({ endpoint: process.env.WS_API_ENDPOINT })
+const bedrock = new BedrockRuntimeClient({})
+const agentRt = new BedrockAgentRuntimeClient({})
 
-const ws = new ApiGatewayManagementApiClient({ endpoint: process.env.WS_API_ENDPOINT });
-const bedrock = new BedrockRuntimeClient({});
-const agentRt = new BedrockAgentRuntimeClient({});
+async function streamMock({ connectionId, prompt }) {
+  const demo = `Here's a streaming demo for your prompt: "${prompt}"\n\n- This is a mock response.\n- It streams tokens over WebSocket.\n- Deployed via CDK, served via CloudFront.\n\nEnjoy the demo!`
+  let seq = 0
+  for (const ch of demo.split('')) {
+    await ws.send(
+      new PostToConnectionCommand({
+        ConnectionId: connectionId,
+        Data: Buffer.from(JSON.stringify({ event: 'delta', seq: seq++, content: ch })),
+      }),
+    )
+    await new Promise((r) => setTimeout(r, 10))
+  }
+  await ws.send(
+    new PostToConnectionCommand({
+      ConnectionId: connectionId,
+      Data: Buffer.from(JSON.stringify({ event: 'complete' })),
+    }),
+  )
+}
 
 exports.handler = async (event) => {
   for (const rec of event.Records) {
-    const job = JSON.parse(rec.body);
-    const { prompt, connectionId } = job;
+    const job = JSON.parse(rec.body)
+    const { prompt, connectionId } = job
 
-    // Retrieve from Knowledge Base
-    let ctx = '';
-    try {
-      const retrieved = await agentRt.send(new RetrieveCommand({
-        knowledgeBaseId: process.env.KNOWLEDGE_BASE_ID,
-        retrievalQuery: { text: prompt },
-        retrievalConfiguration: { vectorSearchConfiguration: { numberOfResults: 6 } }
-      }));
-      const items = (retrieved.retrievalResults || []);
-      ctx = items.map((x, i) => `[S${i+1}] ${x.content?.text?.slice(0,1000)}`).join('\n');
-    } catch (e) {
-      console.log('KB retrieve failed', e);
+    // If explicitly forced to MOCK, stream mock data; otherwise use Bedrock.
+    if (process.env.KNOWLEDGE_BASE_ID === 'MOCK') {
+      await streamMock({ connectionId, prompt })
+      continue
     }
 
-    const system = "You are a helpful assistant. Use only the CONTEXT to answer and cite as [S#]. If unknown, say you don't know.";
-    const user = `CONTEXT:\n${ctx}\n\nUSER: ${prompt}`;
+    // Optional KB retrieval when a real KB id is provided
+    let ctx = ''
+    if (process.env.KNOWLEDGE_BASE_ID) {
+      try {
+        const retrieved = await agentRt.send(
+          new RetrieveCommand({
+            knowledgeBaseId: process.env.KNOWLEDGE_BASE_ID,
+            retrievalQuery: { text: prompt },
+            retrievalConfiguration: { vectorSearchConfiguration: { numberOfResults: 6 } },
+          }),
+        )
+        const items = retrieved.retrievalResults || []
+        ctx = items.map((x, i) => `[S${i + 1}] ${x.content?.text?.slice(0, 1000)}`).join('\n')
+      } catch (e) {
+        console.log('KB retrieve failed', e)
+      }
+    }
+
+    const system = ctx
+      ? "You are a helpful assistant. Use only the CONTEXT to answer and cite as [S#]. If unknown, say you don't know."
+      : 'You are a helpful assistant. Answer clearly and concisely.'
+    const user = ctx ? `CONTEXT:\n${ctx}\n\nUSER: ${prompt}` : prompt
 
     const body = {
       anthropic_version: 'bedrock-2023-05-31',
       max_tokens: 800,
       temperature: 0.2,
-      messages: [{ role: 'user', content: `${system}\n\n${user}` }]
-    };
+      messages: [{ role: 'user', content: `${system}\n\n${user}` }],
+    }
 
-    const cmd = new InvokeModelWithResponseStreamCommand({
-      modelId: process.env.MODEL_ID,
+    const base = {
       contentType: 'application/json',
       accept: 'application/json',
-      body: JSON.stringify(body)
-    });
+      body: JSON.stringify(body),
+    }
+    const useProfile = process.env.INFERENCE_PROFILE_ARN && process.env.INFERENCE_PROFILE_ARN.trim()
 
-    const resp = await bedrock.send(cmd);
-    let seq = 0;
-    for await (const evt of resp.body) {
-      if (evt.chunk && evt.chunk.bytes) {
-        try {
-          const payload = JSON.parse(Buffer.from(evt.chunk.bytes).toString('utf-8'));
-          const delta = payload.delta?.text || payload.output_text || '';
-          if (delta) {
-            await ws.send(new PostToConnectionCommand({
-              ConnectionId: connectionId,
-              Data: Buffer.from(JSON.stringify({ event: 'delta', seq: seq++, content: delta }))
-            }));
+    if (!useProfile) {
+      // Regular streaming with modelId
+      const cmd = new InvokeModelWithResponseStreamCommand({
+        ...base,
+        modelId: process.env.MODEL_ID,
+      })
+      const resp = await bedrock.send(cmd)
+      let seq = 0
+      for await (const evt of resp.body) {
+        if (evt.chunk && evt.chunk.bytes) {
+          try {
+            const payload = JSON.parse(Buffer.from(evt.chunk.bytes).toString('utf-8'))
+            const delta = payload.delta?.text || payload.output_text || ''
+            if (delta) {
+              await ws.send(
+                new PostToConnectionCommand({
+                  ConnectionId: connectionId,
+                  Data: Buffer.from(JSON.stringify({ event: 'delta', seq: seq++, content: delta })),
+                }),
+              )
+            }
+          } catch (e) {
+            console.log('stream parse error', e)
           }
-        } catch (e) {
-          console.log('stream parse error', e);
         }
       }
+      await ws.send(
+        new PostToConnectionCommand({
+          ConnectionId: connectionId,
+          Data: Buffer.from(JSON.stringify({ event: 'complete' })),
+        }),
+      )
+    } else {
+      // Fallback: non-streaming invoke via inference profile, then stream chunks to client
+      const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'eu-central-1'
+      const endpoint = `https://bedrock-runtime.${region}.amazonaws.com`
+      const path = `/inference-profiles/${encodeURIComponent(process.env.INFERENCE_PROFILE_ARN)}/invoke-model`
+
+      const request = new HttpRequest({
+        protocol: 'https:',
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json',
+        },
+        hostname: `bedrock-runtime.${region}.amazonaws.com`,
+        path,
+        body: JSON.stringify(body),
+      })
+
+      const signer = new SignatureV4({
+        service: 'bedrock',
+        region,
+        sha256: Sha256,
+        credentials: defaultProvider(),
+      })
+      const signed = await signer.sign(request)
+
+      const res = await fetch(`${endpoint}${path}`, {
+        method: 'POST',
+        headers: signed.headers,
+        body: request.body,
+      })
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '')
+        console.log('profile invoke error', res.status, errText)
+        throw new Error(`Bedrock profile invoke failed: ${res.status}`)
+      }
+      const txt = await res.text()
+      let json
+      try {
+        json = JSON.parse(txt)
+      } catch {
+        json = {}
+      }
+      const out = json.output_text || json.completion || JSON.stringify(json)
+      // stream the output in small chunks
+      let seq = 0
+      for (const ch of out.split('')) {
+        await ws.send(
+          new PostToConnectionCommand({
+            ConnectionId: connectionId,
+            Data: Buffer.from(JSON.stringify({ event: 'delta', seq: seq++, content: ch })),
+          }),
+        )
+        await new Promise((r) => setTimeout(r, 5))
+      }
+      await ws.send(
+        new PostToConnectionCommand({
+          ConnectionId: connectionId,
+          Data: Buffer.from(JSON.stringify({ event: 'complete' })),
+        }),
+      )
     }
-    await ws.send(new PostToConnectionCommand({
-      ConnectionId: connectionId,
-      Data: Buffer.from(JSON.stringify({ event: 'complete' }))
-    }));
   }
-};
+}
