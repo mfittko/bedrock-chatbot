@@ -1,3 +1,8 @@
+---
+title: Deployment Guide
+layout: default
+---
+
 # Deployment Guide
 
 ## Prerequisites

@@ -1,3 +1,8 @@
+---
+title: Frontend Walkthrough
+layout: default
+---
+
 # Frontend Walkthrough
 
 The POC ships a lightweight, no-build **index.html** that connects to the WebSocket and posts to the REST endpoint.

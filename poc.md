@@ -1,3 +1,8 @@
+---
+title: POC Overview
+layout: default
+---
+
 # POC Overview
 
 This POC demonstrates:

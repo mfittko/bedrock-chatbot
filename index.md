@@ -1,3 +1,8 @@
+---
+title: Bedrock Chatbot: From Prompt to Production
+layout: default
+---
+
 # Bedrock Chatbot: From Prompt to Production
 
 Welcome to **Bedrock Chatbot**, a modern reference architecture for building enterprise-grade generative AI assistants on AWS.
