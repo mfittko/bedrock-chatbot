@@ -12,6 +12,7 @@ Welcome to **Bedrock Chatbot**, a modern reference architecture for building ent
 This project combines **Amazon Bedrock**, **Knowledge Bases**, **Cognito**, **API Gateway (HTTP + WebSocket)**, **SQS**, **Lambda**, and **DynamoDB** to deliver **streaming**, **context-grounded** chat experiences.
 
 ## Why this matters
+
 - **Real-time streaming** UX using Bedrock’s streaming APIs and WebSockets.
 - **RAG** via Bedrock Knowledge Bases for grounded, cited answers.
 - **Async scaling** with SQS and Lambda workers.
@@ -48,6 +49,7 @@ graph TD
 ```
 
 ## Quick links
+
 - [Architecture Deep Dive](architecture.md)
 - [Deployment Guide](deployment.md)
 - [Frontend Walkthrough](frontend.md)

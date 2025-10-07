@@ -6,11 +6,13 @@ layout: default
 # Deployment Guide
 
 ## Prerequisites
+
 - Node.js 18+ and npm
 - AWS CLI configured with an account that has access to **Amazon Bedrock**
 - CDK bootstrap (`cdk bootstrap`) if not done in your account
 
 ## CDK deploy
+
 ```bash
 cd cdk
 npm install
@@ -19,11 +21,14 @@ npm run deploy
 ```
 
 Outputs:
+
 - `RestApiUrl` (append `/chat` for the POST)
 - `WsEndpoint` (use as WebSocket URL)
 
 ## Frontend config
+
 Copy `frontend/config.sample.json` to `frontend/config.json` and paste your endpoints:
+
 ```json
 {
   "rest": "https://<rest-id>.execute-api.<region>.amazonaws.com/chat",
@@ -34,14 +39,16 @@ Copy `frontend/config.sample.json` to `frontend/config.json` and paste your endp
 Open `frontend/index.html` locally or host it via S3+CloudFront.
 
 ## GitHub Pages for docs
+
 Create a repo and push. Then enable GitHub Pages (source: `docs/` folder) or use Actions:
 
 `.github/workflows/gh-pages.yml`:
+
 ```yaml
 name: Publish Docs
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 permissions:
   contents: write
 jobs:
