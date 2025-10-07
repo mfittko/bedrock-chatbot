@@ -1,5 +1,7 @@
 # Bedrock Chatbot (CDK + Streaming + RAG)
 
+[![CI](https://github.com/mfittko/bedrock-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/mfittko/bedrock-chatbot/actions/workflows/ci.yml) • Docs: https://mfittko.github.io/bedrock-chatbot/
+
 A production-ready starter for **streaming LLM chat** on AWS with **Amazon Bedrock** and **Knowledge Bases**.
 
 - WebSocket **token streaming**
