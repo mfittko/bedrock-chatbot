@@ -3,6 +3,8 @@ title: Architecture Deep Dive
 layout: default
 ---
 
+{% include mermaid.html %}
+
 # Architecture Deep Dive
 
 This document explains the end-to-end system, focusing on the **async streaming** flow and **RAG** integration.
