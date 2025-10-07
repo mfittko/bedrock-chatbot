@@ -17,16 +17,15 @@
     "@types/node": "^20.11.20"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.150.0",
-    "constructs": "^10.3.0",
-    "@aws-cdk/aws-apigatewayv2-alpha": "2.150.0-alpha.0",
-    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "2.150.0-alpha.0",
-    "esbuild": "^0.21.5",
-    "@aws-sdk/client-sqs": "^3.607.0",
-    "@aws-sdk/client-dynamodb": "^3.607.0",
-    "@aws-sdk/client-bedrock-runtime": "^3.607.0",
-    "@aws-sdk/client-bedrock-agent-runtime": "^3.607.0",
-    "@aws-sdk/client-apigatewaymanagementapi": "^3.607.0",
-    "@aws-cdk/aws-lambda-nodejs": "2.150.0"
+    "aws-cdk-lib": "2.114.1",
+    "constructs": "^10.4.2",
+    "@aws-cdk/aws-apigatewayv2-alpha": "2.114.1-alpha.0",
+    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "2.114.1-alpha.0",
+    "esbuild": "^0.25.10",
+    "@aws-sdk/client-sqs": "^3.901.0",
+    "@aws-sdk/client-dynamodb": "^3.902.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.901.0",
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.901.0",
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.901.0"
   }
 }
