@@ -1,0 +1,22 @@
+{
+  "name": "bedrock-chatbot",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "cdk"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint \"**/*.{js,ts}\" --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "npm run -w cdk build",
+    "synth": "npm run -w cdk synth"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "eslint": "^9.11.0",
+    "prettier": "^3.3.3"
+  }
+}

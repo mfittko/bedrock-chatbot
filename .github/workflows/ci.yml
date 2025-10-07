@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+permissions:
+  contents: read
+  actions: read
+  checks: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies (workspaces)
+        run: npm install
+      - name: Lint
+        run: npx eslint "**/*.{js,ts}" --max-warnings=0
+      - name: Prettier check
+        run: npx prettier --check .
+      - name: Build CDK
+        run: npm run -w cdk build
+      - name: Synth CDK
+        run: npm run -w cdk synth

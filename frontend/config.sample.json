@@ -1,0 +1,4 @@
+{
+  "rest": "<REST API URL>/chat",
+  "ws": "wss://<id>.execute-api.<region>.amazonaws.com/prod"
+}

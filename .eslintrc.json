@@ -1,0 +1,17 @@
+{
+  "root": true,
+  "env": { "node": true, "es2022": true },
+  "ignorePatterns": ["dist/", "cdk.out/", "node_modules/"],
+  "overrides": [
+    {
+      "files": ["**/*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"]
+    },
+    {
+      "files": ["**/*.js"],
+      "extends": ["eslint:recommended"]
+    }
+  ]
+}
