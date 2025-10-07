@@ -8,6 +8,11 @@ A production-ready starter for **streaming LLM chat** on AWS with **Amazon Bedro
 - CDK v2 (TypeScript)
 - Docs ready for **GitHub Pages** in `/docs`
 
+## Live docs
+- GitHub Pages: https://mfittko.github.io/bedrock-chatbot/
+
+Note: The first-time GitHub Pages publish can take a couple of minutes to provision. If the link 404s, wait ~2 minutes, hard-refresh, or ensure repository Settings → Pages is set to “Deploy from a branch” with Branch: `gh-pages`, Folder: `/`.
+
 ## Quick start
 ```bash
 cd cdk
