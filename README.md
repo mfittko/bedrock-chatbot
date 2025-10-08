@@ -1,44 +1,124 @@
-# Bedrock Chatbot (CDK + Streaming + RAG)
+# Bedrock Chatbot
 
-[![CI](https://github.com/mfittko/bedrock-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/mfittko/bedrock-chatbot/actions/workflows/ci.yml) • Docs: https://mfittko.github.io/bedrock-chatbot/
+A **streaming LLM chat** application on AWS with **Amazon Bedrock** and **Knowledge Bases**.
 
-A production-ready starter for **streaming LLM chat** on AWS with **Amazon Bedrock** and **Knowledge Bases**.
+## Features
 
-- WebSocket **token streaming**
-- **Async** compute via SQS + Lambda
-- **RAG** grounding via Bedrock KB
-- CDK v2 (TypeScript)
-- Docs ready for **GitHub Pages** in `/docs`
+- ✅ Real-time WebSocket streaming
+- ✅ Async processing with SQS + Lambda
+- ✅ RAG with Bedrock Knowledge Bases
+- ✅ Dynamic configuration via SSM Parameter Store
+- ✅ CDK v2 infrastructure as code
+- ✅ CLI tool for configuration management
 
-## Live docs
+## Quick Start
 
-- GitHub Pages: https://mfittko.github.io/bedrock-chatbot/
+1. **Install dependencies:**
 
-Note: The first-time GitHub Pages publish can take a couple of minutes to provision. If the link 404s, wait ~2 minutes, hard-refresh, or ensure repository Settings → Pages is set to “Deploy from a branch” with Branch: `gh-pages`, Folder: `/`.
+   ```bash
+   npm install
+   cd cdk && npm install
+   ```
 
-## Quick start
+2. **Deploy:**
+
+   ```bash
+   npm run deploy
+   ```
+
+   Set `KNOWLEDGE_BASE_ID` env var if using Knowledge Bases:
+
+   ```bash
+   KNOWLEDGE_BASE_ID=your-kb-id npm run deploy
+   ```
+
+3. **Get endpoints from outputs:**
+   - `RestApiUrl` - HTTP API endpoint
+   - `WsEndpoint` - WebSocket endpoint
+   - `ConfigParamName` - SSM configuration parameter
+
+4. **Configure frontend:**
+   - Copy `frontend/config.sample.json` to `frontend/config.json`
+   - Add your API endpoints
+   - Open `frontend/index.html` in a browser
+
+## Configuration Management
+
+Update chatbot behavior without redeployment using the CLI:
 
 ```bash
-cd cdk
-npm install
-# Edit lib/api-stack.ts -> set KNOWLEDGE_BASE_ID and (optionally) MODEL_ID
-npm run deploy
+# View configuration
+npm run cli config get
+
+# Update from file
+npm run cli config update config.example.json
+
+# Set specific values
+npm run cli config set model.modelId "anthropic.claude-3-haiku-20240307-v1:0"
+npm run cli config set generation.temperature 0.7
+
+# Backup configuration
+npm run cli config backup backup.json
+
+# See all commands
+npm run cli config --help
 ```
 
-Grab outputs:
+### Configurable Parameters
 
-- `RestApiUrl` (append `/chat`)
-- `WsEndpoint`
+- **Model**: Model ID, API version
+- **Knowledge Base**: Enable/disable, Knowledge Base ID
+- **Prompts**: System prompts with/without context, context template
+- **Retrieval**: Number of results, max context length
+- **Generation**: Max tokens, temperature, top-p, top-k
 
-Then configure `frontend/config.json` and open `frontend/index.html`.
+See `config.example.json` for the full configuration structure.
+
+**Note**: Knowledge Base ID can be set via configuration (preferred) or environment variable `KNOWLEDGE_BASE_ID` at deployment.
 
 ## Documentation
 
-- Public intro: `docs/index.md`
-- [Architecture](docs/architecture.md)
-- [Deployment](docs/deployment.md)
-- [Frontend](docs/frontend.md)
-- [POC](docs/poc.md)
+- [Architecture](docs/architecture.md) - System design and components
+- [Deployment](docs/deployment.md) - Deployment guide
+- [Configuration](docs/configuration.md) - Configuration management
+- [Frontend](docs/frontend.md) - Frontend setup
+- [POC](docs/poc.md) - Proof of concept notes
+
+## Project Structure
+
+```
+bedrock-chatbot/
+├── bin/
+│   └── bedrock-chatbot      # CLI entry point
+├── cdk/                     # CDK infrastructure
+│   ├── bin/                 # CDK app
+│   └── lib/                 # Stack definitions
+├── lambda/                  # Lambda functions
+│   ├── config-schema.js     # Configuration schema
+│   ├── enqueue/             # HTTP request handler
+│   ├── websocket/           # WebSocket handlers
+│   └── worker/              # SQS worker
+├── frontend/                # Web frontend
+├── tools/
+│   └── cli/                 # Configuration CLI tool
+└── docs/                    # Documentation
+```
+
+## Development
+
+```bash
+# Run tests
+npm test
+
+# Run CLI tests
+cd tools/cli && npm test
+
+# Lint
+npm run lint
+
+# Format
+npm run format
+```
 
 ## License
 

@@ -1,4 +1,4 @@
-import { Stack, StackProps, CfnOutput, Fn } from 'aws-cdk-lib'
+import { Stack, StackProps, CfnOutput } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import { Bucket, BlockPublicAccess } from 'aws-cdk-lib/aws-s3'
 import {
@@ -10,6 +10,7 @@ import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins'
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment'
 import { join } from 'path'
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FrontendProps extends StackProps {}
 
 export class FrontendStack extends Stack {
@@ -34,8 +35,9 @@ export class FrontendStack extends Stack {
 
     const sitePath = join(__dirname, '../../site')
 
-    const rest = Fn.importValue('BedrockChatbot-RestApiUrl')
-    const ws = Fn.importValue('BedrockChatbot-WsEndpoint')
+    // TODO: Use these endpoints to configure frontend
+    // const rest = Fn.importValue('BedrockChatbot-RestApiUrl')
+    // const ws = Fn.importValue('BedrockChatbot-WsEndpoint')
 
     new BucketDeployment(this, 'DeploySite', {
       destinationBucket: bucket,

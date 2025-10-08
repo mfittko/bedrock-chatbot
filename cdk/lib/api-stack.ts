@@ -6,17 +6,14 @@ import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs'
 import { Runtime, Architecture } from 'aws-cdk-lib/aws-lambda'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import {
-  HttpApi,
-  HttpMethod,
-  CorsHttpMethod,
-  CorsPreflightOptions,
-} from '@aws-cdk/aws-apigatewayv2-alpha'
+import { HttpApi, HttpMethod, CorsHttpMethod } from '@aws-cdk/aws-apigatewayv2-alpha'
 import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha'
 import { WebSocketApi, WebSocketStage } from '@aws-cdk/aws-apigatewayv2-alpha'
 import { WebSocketLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha'
 import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam'
+import { StringParameter, ParameterTier } from 'aws-cdk-lib/aws-ssm'
 import { join } from 'path'
+import { defaultConfig } from '../../lambda/config-schema.js'
 
 export interface ApiProps extends StackProps {
   sessionTable: Table
@@ -31,6 +28,15 @@ export class ApiStack extends Stack {
 
   constructor(scope: Construct, id: string, props: ApiProps) {
     super(scope, id, props)
+
+    // Create SSM Parameter with default configuration
+    const configParamName = '/bedrock-chatbot/config'
+    const configParam = new StringParameter(this, 'ChatbotConfig', {
+      parameterName: configParamName,
+      description: 'Bedrock Chatbot dynamic configuration (model, prompts, generation params)',
+      stringValue: JSON.stringify(defaultConfig, null, 2),
+      tier: ParameterTier.ADVANCED, // Advanced tier supports larger values (8KB vs 4KB)
+    })
 
     const q = new Queue(this, 'RequestsQ', {
       encryption: QueueEncryption.KMS_MANAGED,
@@ -130,15 +136,18 @@ export class ApiStack extends Stack {
       environment: {
         SESSION_TABLE: props.sessionTable.tableName,
         WS_API_ENDPOINT: wsStage.callbackUrl.replace('wss://', 'https://'),
-        MODEL_ID: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
         INFERENCE_PROFILE_ARN: process.env.INFERENCE_PROFILE_ARN ?? '',
         KNOWLEDGE_BASE_ID: process.env.KNOWLEDGE_BASE_ID ?? '',
+        CONFIG_PARAM_NAME: configParamName,
       },
       bundling: { minify: true, externalModules: [] },
     })
     q.grantConsumeMessages(workerFn)
     workerFn.addEventSource(new SqsEventSource(q, { batchSize: 1 }))
     props.sessionTable.grantReadWriteData(workerFn)
+
+    // Grant read access to SSM parameter
+    configParam.grantRead(workerFn)
 
     // IAM for WS and Bedrock
     workerFn.addToRolePolicy(
@@ -172,6 +181,11 @@ export class ApiStack extends Stack {
     new CfnOutput(this, 'RestApiUrl', {
       value: this.restApiUrl,
       exportName: 'BedrockChatbot-RestApiUrl',
+    })
+    new CfnOutput(this, 'ConfigParamName', {
+      value: configParamName,
+      description: 'SSM Parameter name for chatbot configuration',
+      exportName: 'BedrockChatbot-ConfigParamName',
     })
   }
 }
