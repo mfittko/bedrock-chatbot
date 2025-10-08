@@ -52,5 +52,6 @@ graph TD
 
 - [Architecture Deep Dive](architecture.md)
 - [Deployment Guide](deployment.md)
+- [Configuration Guide](configuration.md) - Dynamic configuration with SSM Parameter Store
 - [Frontend Walkthrough](frontend.md)
 - [POC Overview](poc.md)
