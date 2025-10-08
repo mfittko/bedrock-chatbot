@@ -15,7 +15,7 @@ const {
   RetrieveCommand,
 } = require('@aws-sdk/client-bedrock-agent-runtime')
 const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm')
-const { defaultConfig } = require('./config-schema')
+const { defaultConfig } = require('../config-schema')
 
 const ws = new ApiGatewayManagementApiClient({ endpoint: process.env.WS_API_ENDPOINT })
 const bedrock = new BedrockRuntimeClient({})
