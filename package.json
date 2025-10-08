@@ -3,15 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "cdk"
+    "cdk",
+    "tools/cli"
   ],
   "license": "MIT",
+  "bin": {
+    "bedrock-chatbot": "./bin/bedrock-chatbot"
+  },
   "scripts": {
     "lint": "eslint \"**/*.{js,ts}\" --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "build": "npm run -w cdk build",
-    "synth": "npm run -w cdk synth"
+    "synth": "npm run -w cdk synth",
+    "cli": "node ./bin/bedrock-chatbot"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.8.0",

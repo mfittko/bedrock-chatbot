@@ -1,0 +1,22 @@
+{
+  "model": {
+    "modelId": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+    "anthropicVersion": "bedrock-2023-05-31"
+  },
+  "prompts": {
+    "systemWithContext": "You are a helpful assistant. Use only the CONTEXT to answer and cite as [S#]. If unknown, say you don't know.",
+    "systemWithoutContext": "You are a helpful assistant. Answer clearly and concisely.",
+    "contextTemplate": "CONTEXT:\n{context}\n\nUSER: {prompt}"
+  },
+  "retrieval": {
+    "numberOfResults": 6,
+    "maxContextLength": 1000
+  },
+  "generation": {
+    "maxTokens": 800,
+    "temperature": 0.2,
+    "topP": 0.9,
+    "topK": 250
+  }
+}
+

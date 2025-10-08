@@ -14,10 +14,57 @@ const {
   BedrockAgentRuntimeClient,
   RetrieveCommand,
 } = require('@aws-sdk/client-bedrock-agent-runtime')
+const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm')
+const { defaultConfig } = require('./config-schema')
 
 const ws = new ApiGatewayManagementApiClient({ endpoint: process.env.WS_API_ENDPOINT })
 const bedrock = new BedrockRuntimeClient({})
 const agentRt = new BedrockAgentRuntimeClient({})
+const ssm = new SSMClient({})
+
+// Configuration cache (with TTL)
+let configCache = null
+let configCacheTime = 0
+const CONFIG_CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+/**
+ * Fetches configuration from SSM Parameter Store with caching
+ * @returns {Promise<Object>} Configuration object
+ */
+async function getConfig() {
+  const now = Date.now()
+
+  // Return cached config if still valid
+  if (configCache && now - configCacheTime < CONFIG_CACHE_TTL_MS) {
+    return configCache
+  }
+
+  // Try to fetch from SSM, fall back to default config
+  try {
+    const paramName = process.env.CONFIG_PARAM_NAME || '/bedrock-chatbot/config'
+    const response = await ssm.send(
+      new GetParameterCommand({
+        Name: paramName,
+        WithDecryption: true,
+      }),
+    )
+
+    if (response.Parameter && response.Parameter.Value) {
+      const config = JSON.parse(response.Parameter.Value)
+      configCache = config
+      configCacheTime = now
+      console.log('Configuration loaded from SSM')
+      return config
+    }
+  } catch (error) {
+    console.warn('Failed to load config from SSM, using defaults:', error.message)
+  }
+
+  // Fall back to default configuration
+  configCache = defaultConfig
+  configCacheTime = now
+  return defaultConfig
+}
 
 async function streamMock({ connectionId, prompt }) {
   const demo = `Here's a streaming demo for your prompt: "${prompt}"\n\n- This is a mock response.\n- It streams tokens over WebSocket.\n- Deployed via CDK, served via CloudFront.\n\nEnjoy the demo!`
@@ -40,6 +87,9 @@ async function streamMock({ connectionId, prompt }) {
 }
 
 exports.handler = async (event) => {
+  // Load configuration (cached)
+  const config = await getConfig()
+
   for (const rec of event.Records) {
     const job = JSON.parse(rec.body)
     const { prompt, connectionId } = job
@@ -58,25 +108,34 @@ exports.handler = async (event) => {
           new RetrieveCommand({
             knowledgeBaseId: process.env.KNOWLEDGE_BASE_ID,
             retrievalQuery: { text: prompt },
-            retrievalConfiguration: { vectorSearchConfiguration: { numberOfResults: 6 } },
+            retrievalConfiguration: {
+              vectorSearchConfiguration: {
+                numberOfResults: config.retrieval.numberOfResults,
+              },
+            },
           }),
         )
         const items = retrieved.retrievalResults || []
-        ctx = items.map((x, i) => `[S${i + 1}] ${x.content?.text?.slice(0, 1000)}`).join('\n')
+        ctx = items
+          .map((x, i) => `[S${i + 1}] ${x.content?.text?.slice(0, config.retrieval.maxContextLength)}`)
+          .join('\n')
       } catch (e) {
         console.log('KB retrieve failed', e)
       }
     }
 
-    const system = ctx
-      ? "You are a helpful assistant. Use only the CONTEXT to answer and cite as [S#]. If unknown, say you don't know."
-      : 'You are a helpful assistant. Answer clearly and concisely.'
-    const user = ctx ? `CONTEXT:\n${ctx}\n\nUSER: ${prompt}` : prompt
+    // Use configured prompts
+    const system = ctx ? config.prompts.systemWithContext : config.prompts.systemWithoutContext
+    const user = ctx
+      ? config.prompts.contextTemplate.replace('{context}', ctx).replace('{prompt}', prompt)
+      : prompt
 
     const body = {
-      anthropic_version: 'bedrock-2023-05-31',
-      max_tokens: 800,
-      temperature: 0.2,
+      anthropic_version: config.model.anthropicVersion,
+      max_tokens: config.generation.maxTokens,
+      temperature: config.generation.temperature,
+      top_p: config.generation.topP,
+      top_k: config.generation.topK,
       messages: [{ role: 'user', content: `${system}\n\n${user}` }],
     }
 
@@ -91,7 +150,7 @@ exports.handler = async (event) => {
       // Regular streaming with modelId
       const cmd = new InvokeModelWithResponseStreamCommand({
         ...base,
-        modelId: process.env.MODEL_ID,
+        modelId: config.model.modelId,
       })
       const resp = await bedrock.send(cmd)
       let seq = 0

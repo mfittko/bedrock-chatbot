@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+// Symlink to the actual CLI tool
+import('../tools/cli/index.js')
