@@ -94,6 +94,8 @@ export function validateConfig(config) {
   const requiredFields = [
     { path: 'model.modelId', type: 'string' },
     { path: 'model.anthropicVersion', type: 'string' },
+    { path: 'knowledgeBase.enabled', type: 'boolean' },
+    { path: 'knowledgeBase.knowledgeBaseId', type: 'string' },
     { path: 'prompts.systemWithContext', type: 'string' },
     { path: 'prompts.systemWithoutContext', type: 'string' },
     { path: 'prompts.contextTemplate', type: 'string' },

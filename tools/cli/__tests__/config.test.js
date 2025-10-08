@@ -52,6 +52,10 @@ describe('Config Module', () => {
           modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
           anthropicVersion: 'bedrock-2023-05-31',
         },
+        knowledgeBase: {
+          enabled: false,
+          knowledgeBaseId: '',
+        },
         prompts: {
           systemWithContext: 'You are a helpful assistant.',
           systemWithoutContext: 'You are a helpful assistant.',
@@ -77,6 +81,10 @@ describe('Config Module', () => {
       const invalidConfig = {
         model: {
           anthropicVersion: 'bedrock-2023-05-31',
+        },
+        knowledgeBase: {
+          enabled: false,
+          knowledgeBaseId: '',
         },
         prompts: {
           systemWithContext: 'test',
@@ -184,6 +192,10 @@ describe('Config Module', () => {
           modelId: 'test',
           anthropicVersion: 'bedrock-2023-05-31',
         },
+        knowledgeBase: {
+          enabled: true,
+          knowledgeBaseId: 'my-kb-id',
+        },
         prompts: {
           systemWithContext: 'test',
           systemWithoutContext: 'test',
@@ -211,6 +223,10 @@ describe('Config Module', () => {
           modelId: 'test',
           anthropicVersion: 'bedrock-2023-05-31',
         },
+        knowledgeBase: {
+          enabled: false,
+          knowledgeBaseId: '',
+        },
         prompts: {
           systemWithContext: 'test',
           systemWithoutContext: 'test',
@@ -236,7 +252,7 @@ describe('Config Module', () => {
       const errors = validateConfig({})
       expect(errors.length).toBeGreaterThan(0)
       // Should report all missing required fields
-      expect(errors.length).toBeGreaterThanOrEqual(10)
+      expect(errors.length).toBeGreaterThanOrEqual(12)
     })
 
     test('handles null values', () => {
@@ -244,6 +260,10 @@ describe('Config Module', () => {
         model: {
           modelId: null,
           anthropicVersion: null,
+        },
+        knowledgeBase: {
+          enabled: null,
+          knowledgeBaseId: null,
         },
         prompts: {
           systemWithContext: null,
@@ -285,6 +305,10 @@ describe('Config Module', () => {
           model: {
             modelId: 'test-model',
             anthropicVersion: 'bedrock-2023-05-31',
+          },
+          knowledgeBase: {
+            enabled: false,
+            knowledgeBaseId: '',
           },
           prompts: {
             systemWithContext: 'test',
@@ -341,6 +365,7 @@ describe('Config Module', () => {
       test('updates configuration successfully with object', async () => {
         const newConfig = {
           model: { modelId: 'new-model', anthropicVersion: 'v1' },
+          knowledgeBase: { enabled: true, knowledgeBaseId: 'my-kb' },
           prompts: { systemWithContext: 'new', systemWithoutContext: 'new', contextTemplate: 'new' },
           retrieval: { numberOfResults: 10, maxContextLength: 2000 },
           generation: { maxTokens: 1000, temperature: 0.5, topP: 0.95, topK: 300 },

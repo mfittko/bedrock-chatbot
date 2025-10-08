@@ -94,19 +94,24 @@ exports.handler = async (event) => {
     const job = JSON.parse(rec.body)
     const { prompt, connectionId } = job
 
+    // Determine Knowledge Base ID: config takes precedence over env var
+    const knowledgeBaseId = config.knowledgeBase.enabled
+      ? config.knowledgeBase.knowledgeBaseId
+      : process.env.KNOWLEDGE_BASE_ID || ''
+
     // If explicitly forced to MOCK, stream mock data; otherwise use Bedrock.
-    if (process.env.KNOWLEDGE_BASE_ID === 'MOCK') {
+    if (knowledgeBaseId === 'MOCK') {
       await streamMock({ connectionId, prompt })
       continue
     }
 
-    // Optional KB retrieval when a real KB id is provided
+    // Optional KB retrieval when enabled and KB ID is provided
     let ctx = ''
-    if (process.env.KNOWLEDGE_BASE_ID) {
+    if (config.knowledgeBase.enabled && knowledgeBaseId) {
       try {
         const retrieved = await agentRt.send(
           new RetrieveCommand({
-            knowledgeBaseId: process.env.KNOWLEDGE_BASE_ID,
+            knowledgeBaseId: knowledgeBaseId,
             retrievalQuery: { text: prompt },
             retrievalConfiguration: {
               vectorSearchConfiguration: {

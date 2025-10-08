@@ -64,11 +64,14 @@ npm run cli config --help
 ### Configurable Parameters
 
 - **Model**: Model ID, API version
+- **Knowledge Base**: Enable/disable, Knowledge Base ID
 - **Prompts**: System prompts with/without context, context template
 - **Retrieval**: Number of results, max context length
 - **Generation**: Max tokens, temperature, top-p, top-k
 
 See `config.example.json` for the full configuration structure.
+
+**Note**: Knowledge Base ID can be set via configuration (preferred) or environment variable `KNOWLEDGE_BASE_ID` at deployment.
 
 ## Documentation
 

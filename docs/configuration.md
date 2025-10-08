@@ -53,6 +53,19 @@ The configuration is defined in `/lambda/config-schema.js` with the following st
 - **`anthropicVersion`**: The Anthropic API version
   - Default: `bedrock-2023-05-31`
 
+### Knowledge Base Settings (`knowledgeBase`)
+
+- **`enabled`**: Enable or disable Knowledge Base retrieval
+  - Type: `boolean`
+  - Default: `false`
+  - When `true`, the system will retrieve context from the Knowledge Base
+
+- **`knowledgeBaseId`**: The Bedrock Knowledge Base ID
+  - Type: `string`
+  - Default: `""` (empty string)
+  - Example: `"ABCDEFGH12"`
+  - **Note**: Config takes precedence over `KNOWLEDGE_BASE_ID` environment variable
+
 ### Prompt Configuration (`prompts`)
 
 - **`systemWithContext`**: System prompt used when Knowledge Base context is available
@@ -134,6 +147,19 @@ npm run cli config reset
 Changes take effect within 5 minutes.
 
 ## Examples
+
+### Enable Knowledge Base
+
+```bash
+npm run cli config set knowledgeBase.enabled true
+npm run cli config set knowledgeBase.knowledgeBaseId "YOUR_KB_ID"
+```
+
+### Disable Knowledge Base
+
+```bash
+npm run cli config set knowledgeBase.enabled false
+```
 
 ### Switch Models
 

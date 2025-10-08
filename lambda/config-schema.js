@@ -6,6 +6,7 @@
 /**
  * @typedef {Object} ChatbotConfig
  * @property {ModelConfig} model - Model configuration
+ * @property {KnowledgeBaseConfig} knowledgeBase - Knowledge Base configuration
  * @property {PromptConfig} prompts - System prompts configuration
  * @property {RetrievalConfig} retrieval - Knowledge base retrieval configuration
  * @property {GenerationConfig} generation - Generation parameters
@@ -15,6 +16,12 @@
  * @typedef {Object} ModelConfig
  * @property {string} modelId - Bedrock model ID (e.g., anthropic.claude-3-5-sonnet-20240620-v1:0)
  * @property {string} anthropicVersion - Anthropic API version
+ */
+
+/**
+ * @typedef {Object} KnowledgeBaseConfig
+ * @property {boolean} enabled - Enable/disable Knowledge Base retrieval
+ * @property {string} knowledgeBaseId - Knowledge Base ID (empty string if disabled)
  */
 
 /**
@@ -46,6 +53,10 @@ const defaultConfig = {
   model: {
     modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
     anthropicVersion: 'bedrock-2023-05-31',
+  },
+  knowledgeBase: {
+    enabled: false,
+    knowledgeBaseId: '',
   },
   prompts: {
     systemWithContext:
