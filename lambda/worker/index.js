@@ -122,7 +122,9 @@ exports.handler = async (event) => {
         )
         const items = retrieved.retrievalResults || []
         ctx = items
-          .map((x, i) => `[S${i + 1}] ${x.content?.text?.slice(0, config.retrieval.maxContextLength)}`)
+          .map(
+            (x, i) => `[S${i + 1}] ${x.content?.text?.slice(0, config.retrieval.maxContextLength)}`,
+          )
           .join('\n')
       } catch (e) {
         console.log('KB retrieve failed', e)

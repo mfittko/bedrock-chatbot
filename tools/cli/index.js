@@ -111,4 +111,3 @@ configCmd
 
 // Parse arguments
 program.parse()
-

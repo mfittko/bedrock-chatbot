@@ -4,10 +4,10 @@ const tsPlugin = require('@typescript-eslint/eslint-plugin')
 const globals = require('globals')
 
 module.exports = [
-  { 
+  {
     ignores: [
-      'dist/**', 
-      'cdk.out/**', 
+      'dist/**',
+      'cdk.out/**',
       'node_modules/**',
       '**/cdk.out/**',
       '**/dist/**',
@@ -16,36 +16,36 @@ module.exports = [
       '**/*.d.ts',
       'lambda/**/*.js', // Generated lambda assets
       'frontend/dist/**',
-      'site/**'
-    ] 
+      'site/**',
+    ],
   },
   {
     files: ['**/*.js'],
-    languageOptions: { 
-      ecmaVersion: 2022, 
+    languageOptions: {
+      ecmaVersion: 2022,
       sourceType: 'module', // Changed to module to support ES modules
-      globals: globals.node 
+      globals: globals.node,
     },
     rules: js.configs.recommended.rules,
   },
   {
     files: ['**/*.cjs', 'eslint.config.cjs'],
-    languageOptions: { 
-      ecmaVersion: 2022, 
-      sourceType: 'commonjs', 
-      globals: globals.node 
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: globals.node,
     },
     rules: js.configs.recommended.rules,
   },
   {
     files: ['**/*.test.js', '**/__tests__/**/*.js'],
-    languageOptions: { 
-      ecmaVersion: 2022, 
+    languageOptions: {
+      ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
         ...globals.node,
-        ...globals.jest
-      }
+        ...globals.jest,
+      },
     },
     rules: js.configs.recommended.rules,
   },

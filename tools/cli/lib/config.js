@@ -227,7 +227,9 @@ export async function handleSet(key, value) {
 
     spinner.stop()
     await updateConfig(config)
-    console.log(chalk.green(`\n✓ Set ${chalk.cyan(key)} = ${chalk.yellow(JSON.stringify(parsedValue))}`))
+    console.log(
+      chalk.green(`\n✓ Set ${chalk.cyan(key)} = ${chalk.yellow(JSON.stringify(parsedValue))}`),
+    )
   } catch {
     process.exit(1)
   }
@@ -332,4 +334,3 @@ export async function handleReset() {
     process.exit(1)
   }
 }
-

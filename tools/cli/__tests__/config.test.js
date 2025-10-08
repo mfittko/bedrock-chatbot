@@ -366,7 +366,11 @@ describe('Config Module', () => {
         const newConfig = {
           model: { modelId: 'new-model', anthropicVersion: 'v1' },
           knowledgeBase: { enabled: true, knowledgeBaseId: 'my-kb' },
-          prompts: { systemWithContext: 'new', systemWithoutContext: 'new', contextTemplate: 'new' },
+          prompts: {
+            systemWithContext: 'new',
+            systemWithoutContext: 'new',
+            contextTemplate: 'new',
+          },
           retrieval: { numberOfResults: 10, maxContextLength: 2000 },
           generation: { maxTokens: 1000, temperature: 0.5, topP: 0.95, topK: 300 },
         }
@@ -408,4 +412,3 @@ describe('Config Module', () => {
     })
   })
 })
-

@@ -6,11 +6,7 @@ import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs'
 import { Runtime, Architecture } from 'aws-cdk-lib/aws-lambda'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import {
-  HttpApi,
-  HttpMethod,
-  CorsHttpMethod,
-} from '@aws-cdk/aws-apigatewayv2-alpha'
+import { HttpApi, HttpMethod, CorsHttpMethod } from '@aws-cdk/aws-apigatewayv2-alpha'
 import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha'
 import { WebSocketApi, WebSocketStage } from '@aws-cdk/aws-apigatewayv2-alpha'
 import { WebSocketLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha'

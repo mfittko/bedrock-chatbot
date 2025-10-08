@@ -9,7 +9,8 @@ permissions:
   actions: read
   checks: write
 jobs:
-  build:
+  lint:
+    name: Lint & Format Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,12 +18,47 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Install dependencies (workspaces)
+      - name: Install dependencies
         run: npm install
       - name: Lint
-        run: npx eslint "**/*.{js,ts}" --max-warnings=0
+        run: npm run lint
       - name: Prettier check
         run: npx prettier --check .
+
+  test:
+    name: Test - ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: CLI
+            path: tools/cli
+            test-command: npm test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Test ${{ matrix.name }}
+        working-directory: ${{ matrix.path }}
+        run: ${{ matrix.test-command }}
+
+  build:
+    name: Build & Synth CDK
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm install
       - name: Build CDK
         run: npm run -w cdk build
       - name: Synth CDK

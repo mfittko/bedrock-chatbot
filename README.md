@@ -14,17 +14,20 @@ A **streaming LLM chat** application on AWS with **Amazon Bedrock** and **Knowle
 ## Quick Start
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    cd cdk && npm install
    ```
 
 2. **Deploy:**
+
    ```bash
    npm run deploy
    ```
-   
+
    Set `KNOWLEDGE_BASE_ID` env var if using Knowledge Bases:
+
    ```bash
    KNOWLEDGE_BASE_ID=your-kb-id npm run deploy
    ```

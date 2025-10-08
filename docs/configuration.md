@@ -195,21 +195,24 @@ npm run cli config update my-prompts.json
 ## Monitoring
 
 Check CloudWatch Logs for:
+
 - `Configuration loaded from SSM` - Success
 - `Failed to load config from SSM, using defaults` - Fallback active
 
 ## Troubleshooting
 
 **Changes not applying?**
+
 - Wait 5 minutes for cache to expire
 - Check CloudWatch Logs for errors
 
 **JSON validation errors?**
+
 ```bash
 npm run cli config validate my-config.json
 ```
 
 **Access denied?**
+
 - Verify Lambda IAM role has `ssm:GetParameter` permission
 - Check parameter exists: `/bedrock-chatbot/config`
-

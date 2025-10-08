@@ -5,11 +5,13 @@ Node.js CLI tool for managing chatbot configuration via SSM Parameter Store.
 ## Usage
 
 From project root:
+
 ```bash
 npm run cli config get
 ```
 
 Or install globally:
+
 ```bash
 npm install -g .
 bedrock-chatbot config get
@@ -123,7 +125,41 @@ npm run test:watch      # Watch mode
 npm run test:coverage   # With coverage
 ```
 
+### Test Suite
+
+The CLI includes comprehensive tests using Jest:
+
+- **15 tests** covering validation, SSM integration, and command handlers
+- **Mocked AWS SDK** for isolated unit testing
+- **Test coverage tracking** enabled
+- **CI/CD integration** via GitHub Actions
+
+All tests run automatically on:
+
+- Pull requests to `main` branch
+- Pushes to `main` branch
+
+### Running Tests Locally
+
+```bash
+# From the CLI directory
+cd tools/cli
+npm test
+
+# From project root
+npm run -w tools/cli test
+```
+
+## CI/CD
+
+This CLI is tested as part of the project's CI pipeline. The workflow:
+
+1. **Lint** - ESLint checks for code quality
+2. **Test** - Jest runs all CLI tests
+3. **Build** - CDK build and synth (after tests pass)
+
+See `.github/workflows/ci.yml` for the complete workflow configuration.
+
 ## License
 
 MIT
-
