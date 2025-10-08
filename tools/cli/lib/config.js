@@ -151,7 +151,7 @@ export async function handleGet() {
     const config = await getConfig()
     console.log('\n' + JSON.stringify(config, null, 2))
     return config
-  } catch (error) {
+  } catch {
     process.exit(1)
   }
 }
@@ -204,7 +204,7 @@ export async function handleSet(key, value) {
   try {
     const config = await getConfig()
 
-    spinner = ora(`Setting ${chalk.cyan(key)} = ${chalk.yellow(value)}`).start()
+    const spinner = ora(`Setting ${chalk.cyan(key)} = ${chalk.yellow(value)}`).start()
 
     // Try to parse value as JSON, otherwise treat as string
     let parsedValue = value
@@ -228,7 +228,7 @@ export async function handleSet(key, value) {
     spinner.stop()
     await updateConfig(config)
     console.log(chalk.green(`\n✓ Set ${chalk.cyan(key)} = ${chalk.yellow(JSON.stringify(parsedValue))}`))
-  } catch (error) {
+  } catch {
     process.exit(1)
   }
 }
@@ -285,7 +285,7 @@ export async function handleBackup(filePath) {
     spinner.succeed(`Backup saved to ${chalk.cyan(filePath)}`)
 
     console.log(chalk.green('\n✓ Configuration backed up successfully'))
-  } catch (error) {
+  } catch {
     process.exit(1)
   }
 }
@@ -332,6 +332,4 @@ export async function handleReset() {
     process.exit(1)
   }
 }
-
-let spinner
 

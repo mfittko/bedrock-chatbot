@@ -12,7 +12,7 @@ const env = { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_
 const identity = new IdentityStack(app, 'IdentityStack', { env })
 const data = new DataStack(app, 'DataStack', { env })
 
-const api = new ApiStack(app, 'ApiStack', {
+new ApiStack(app, 'ApiStack', {
   env,
   userPool: identity.userPool,
   userPoolClient: identity.userPoolClient,
