@@ -32,13 +32,13 @@ export async function handleOpen() {
 
   try {
     // Get API stack outputs
-    const apiOutputs = await getStackOutputs('ApiStack')
+    const apiOutputs = await getStackOutputs('BedrockChatbot-ApiStack')
     const restApiUrl = apiOutputs.RestApiUrl
     const wsEndpoint = apiOutputs.WsEndpoint
 
     if (!restApiUrl || !wsEndpoint) {
-      spinner.fail('Missing API endpoints in ApiStack outputs')
-      console.log(chalk.yellow('\nMake sure the ApiStack is deployed with outputs:'))
+      spinner.fail('Missing API endpoints in BedrockChatbot-ApiStack outputs')
+      console.log(chalk.yellow('\nMake sure the BedrockChatbot-ApiStack is deployed with outputs:'))
       console.log('  - RestApiUrl')
       console.log('  - WsEndpoint')
       process.exit(1)
@@ -46,11 +46,11 @@ export async function handleOpen() {
 
     // Get frontend stack outputs
     spinner.text = 'Getting frontend URL...'
-    const frontendOutputs = await getStackOutputs('FrontendStack')
+    const frontendOutputs = await getStackOutputs('BedrockChatbot-FrontendStack')
     const siteUrl = frontendOutputs.SiteUrl
 
     if (!siteUrl) {
-      spinner.fail('Missing SiteUrl in FrontendStack outputs')
+      spinner.fail('Missing SiteUrl in BedrockChatbot-FrontendStack outputs')
       process.exit(1)
     }
 
