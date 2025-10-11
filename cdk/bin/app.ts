@@ -13,13 +13,13 @@ const env = { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_
 const stackPrefix = 'BedrockChatbot-'
 const resourcePrefix = 'BedrockChatbot-'
 
-const identity = new IdentityStack(app, `${stackPrefix}IdentityStack`, { 
+const identity = new IdentityStack(app, `${stackPrefix}IdentityStack`, {
   env,
   stackName: `${stackPrefix}IdentityStack`,
   resourcePrefix,
 })
 
-const data = new DataStack(app, `${stackPrefix}DataStack`, { 
+const data = new DataStack(app, `${stackPrefix}DataStack`, {
   env,
   stackName: `${stackPrefix}DataStack`,
   resourcePrefix,
@@ -35,7 +35,7 @@ new ApiStack(app, `${stackPrefix}ApiStack`, {
   policyTable: data.policyTable,
 })
 
-new FrontendStack(app, `${stackPrefix}FrontendStack`, { 
+new FrontendStack(app, `${stackPrefix}FrontendStack`, {
   env,
   stackName: `${stackPrefix}FrontendStack`,
   resourcePrefix,
